@@ -5,7 +5,7 @@
 ##### **Info**: The program was intended to use the SPARQL database as a bridge and process the algorithm in Python but we ran into tons of problems with using Java, SPARQL and Python together so we deiced it was best to remove the python component and translate it to Java. 
 
 ## How to use:
-* Clone or download this repository by running command below or [click here](https://github.com/EwyBoy/Movie-Recommender/archive/master.zip)
+* Clone or download this repository by running command below or [click here](https://github.com/ponderking/Movie-Recommender/archive/master.zip)
 ```
 git clone https://github.com/ponderking/Movie-Recommender
 ```

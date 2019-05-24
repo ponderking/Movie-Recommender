@@ -12,7 +12,7 @@ git clone https://github.com/ponderking/Movie-Recommender
 
 1. Open the project folder `Movie Recommender` as a project in IntelliJ (Have not tested Eclipse)
 2. Make sure the two required libraries found in the `lib` are recognized and added to your project settings. Both `GSON.jar`and the entire `lib` folder inside `lib/apache-jena-3.11.0/`
-3. Make sure language level is set to Java 8. Don't use any other version of Java.
+3. If you get "javafx.something does not exist" problems, try setting the JDK or language level to something that comes with javafx. 
 4. To start the program run `public static void main(String[] args)`
 5. The start window should appear:
 6. Click `Start` to launch the program. This can take a few seconds..

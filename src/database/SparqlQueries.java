@@ -30,86 +30,13 @@ public class SparqlQueries {
         return movies;
     }
 
-    /**
-     * Generates movie objects using triples based on list of movie.getTitle()
-     * @param titles of movie
-     * @return List<Movie>
-     */
-    public List<Movie> createMovieObjectsFromMovie(List<Movie> titles) {
-        List<Movie> movies = new ArrayList<>();
-        for(Movie title : titles) {
-            String query = ""
-                    + "PREFIX info216: <http://info216.no/v2019/vocabulary/> PREFIX dbp: <http://dbpedia.org/page/> PREFIX dbo: <http://dbpedia.org/ontology/> "
-                    + "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#> "
-                    + "SELECT ?title ?year ?genres ?runtime ?language ?country ?gross ?votes ?rating ?score ?link ?id ?directorName WHERE {"
-                        + "?movie info216:title ?title ;"
-                        + "dbo:year ?year ;"
-                        + "info216:genres ?genres ;"
-                        + "dbo:filmRuntime ?runtime ;"
-                        + "dbo:language ?language ;"
-                        + "dbo:country ?country ;"
-                        + "dbo:gross ?gross ;"
-                        + "info216:imdb_votes ?votes ;"
-                        + "dbo:content_rating ?rating ;"
-                        + "dbo:rating ?score ;"
-                        + "dbp:Hyperlink ?link ;"
-                        + "info216:imdbId ?id ;"
-                        + "dbo:director ?director."
-                        + "?director vcard:FN ?directorName."
-                        + "FILTER regex(?title, \"^" + title.getTitle() + "$\", \"i\")."
-                    + "}";
-
-            ResultSet resultSet = QueryExecutionFactory
-                    .create(query, model)
-                    .execSelect()
-            ;
-
-            while (resultSet.hasNext()) {
-
-                QuerySolution qsol = resultSet.next();
-
-                ArrayList<String> actors = actorsOfTitle(qsol.get("?title").toString());
-                ArrayList<String> keywords = keywordsOfTitle(qsol.get("?title").toString());
-
-                // Adds all properties returned from query as parameters for the movie object.
-                if (qsol.get("?title") != null) {
-                    Movie movie = new Movie(
-                        qsol.get("?title").toString(),
-                        qsol.get("?year").toString(),
-                        qsol.get("?genres").toString(),
-                        qsol.get("?runtime").toString(),
-                        qsol.get("?language").toString(),
-                        qsol.get("?country").toString(),
-                        qsol.get("?gross").toString(),
-                        qsol.get("?votes").toString(),
-                        qsol.get("?rating").toString(),
-                        qsol.get("?score").toString(),
-                        qsol.get("?link").toString(),
-                        qsol.get("?id").toString(),
-                        qsol.get("?directorName").toString(),
-                        actors,
-                        keywords
-                    );
-                    movies.add(movie);
-                }
-            }
-        }
-        //  return list of movie-objects.
-        return movies;
-    }
-
-    /**
-     * Generates movie objects using triples based on list of movie titles from String
-     * @param titles of movie
-     * @return List<Movie>
-     */
     public List<Movie> createMovieObjects(List<String> titles) {
-        List<Movie> movies = new ArrayList<>();
+        ArrayList<Movie> movies = new ArrayList<>();
         for(String title : titles) {
             String query = ""
                     + "PREFIX info216: <http://info216.no/v2019/vocabulary/> PREFIX dbp: <http://dbpedia.org/page/> PREFIX dbo: <http://dbpedia.org/ontology/> "
                     + "PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#> "
-                    + "SELECT ?title ?year ?genres ?runtime ?language ?country ?gross ?votes ?rating ?score ?link ?id ?directorName WHERE {"
+                    + "SELECT ?title ?year ?genres ?runtime ?language ?country ?gross ?votes ?score ?rating ?link ?id ?directorName WHERE {"
                     + "?movie info216:title ?title ;"
                     + "dbo:year ?year ;"
                     + "info216:genres ?genres ;"
@@ -118,28 +45,22 @@ public class SparqlQueries {
                     + "dbo:country ?country ;"
                     + "dbo:gross ?gross ;"
                     + "info216:imdb_votes ?votes ;"
-                    + "dbo:content_rating ?rating ;"
                     + "dbo:rating ?score ;"
+                    + "dbo:content_rating ?rating;"
                     + "dbp:Hyperlink ?link ;"
                     + "info216:imdbId ?id ;"
                     + "dbo:director ?director."
                     + "?director vcard:FN ?directorName."
                     + "FILTER regex(?title, \"^" + title + "$\", \"i\")."
                     + "}";
-
             ResultSet resultSet = QueryExecutionFactory
                     .create(query, model)
-                    .execSelect()
-                    ;
-
+                    .execSelect();
             while (resultSet.hasNext()) {
-
                 QuerySolution qsol = resultSet.next();
-
                 ArrayList<String> actors = actorsOfTitle(qsol.get("?title").toString());
                 ArrayList<String> keywords = keywordsOfTitle(qsol.get("?title").toString());
-
-                // Adds all properties returned from query as parameters for the movie object.
+                // add all properties returned from query as paramters for the movie object.
                 if (qsol.get("?title") != null) {
                     Movie movie = new Movie(
                             qsol.get("?title").toString(),
@@ -156,8 +77,7 @@ public class SparqlQueries {
                             qsol.get("?id").toString(),
                             qsol.get("?directorName").toString(),
                             actors,
-                            keywords
-                    );
+                            keywords);
                     movies.add(movie);
                 }
             }
@@ -166,63 +86,57 @@ public class SparqlQueries {
         return movies;
     }
 
+
     // This method takes a parameter of several movies, and then queries the dbpedia endpoint to make a big list of all the subjects that occur in all of them.
     // Then we find which of these subjects occur most often and return the top three of them. An example of a subject is: Films_about_sharks or Space-Adventure films and more.
     public List<String> predictSubgenres(List<Movie> movies) {
-
         if(movies.isEmpty()) {
             return null;
         }
-
         // dbpedia has pretty inconsistent url's unfortunately for their movies.
         // Therefore we often need to attempt several different versions to make a sucessfull query.
         List<String> queryAttempts = prepareURLs(movies);
-
         // movies that were sucessfully queried.
-
         List<String> succesQueries = new ArrayList<>();
-
         // top-subjects that will be returned.
         List<String> subjects = new ArrayList<>();
 
         int attempt = 1;
         boolean skipNext = false;
+        System.out.println("\nGenerating predictions....\n");
 
         for (String title : queryAttempts) {
-            //skips queries for movies that already had a successful query.
+//              skips queries for movies that already had a sucesfull query.
             if(!(skipNext)) {
                 String query = "PREFIX dc: <http://purl.org/dc/terms/> PREFIX dbo: <http://dbpedia.org/ontology/>" +
-                    "SELECT DISTINCT ?subject" +
-                    " WHERE {" +
+                        "SELECT DISTINCT ?subject" +
+                        " WHERE {" +
                         "<http://dbpedia.org/resource/" + title + "> dc:subject ?subject." +
-                        //" FILTER regex(str(?subject), \"about\", \"i\")." +
-                    "}";
-
+//                                                     " FILTER regex(str(?subject), \"about\", \"i\")." +
+                        "}";
+//                  System.out.println("Trying URL: " + "<http://dbpedia.org/resource/" + title + ">");
                 ResultSet resultSet = QueryExecutionFactory.sparqlService("http://dbpedia.org/sparql", query).execSelect();
-
                 if (resultSet.hasNext()) {
                     succesQueries.add(title);
                     // add all subjects to a big list, and format away the uri leaving only the subjects itself.
                     resultSet.forEachRemaining(
                             qsol -> subjects.add(qsol.get("?subject").toString().split(":")[2].replace("_", " "))
                     );
-                    // if we made the query on first or second attempt, we dont have to any more until next movie.
+//                        if we made the query on first or second attempt, we dont have to any more until next movie.
                     if (attempt == 1 || attempt == 2) {
                         skipNext = true;
                     }
                 }
-            } else {
+            }
+            else {
                 skipNext = false;
             }
-
             attempt++;
-
-            // time for next movie.
+//              time for next movie.
             if(attempt > 3) {
                 attempt = 1;
             }
         }
-
         // Let's sort the map of frequencies, so that we can easily find the top subjects.
         Map<String, Integer> frequencyMap = new HashMap<>();
         for (String s : subjects) {
@@ -231,7 +145,6 @@ public class SparqlQueries {
                 count = 0;
             frequencyMap.put(s, count + 1);
         }
-
         Sorting sorting = new Sorting();
         frequencyMap = sorting.sortByValue(frequencyMap);
         // The top three subjects we want are exactly the three first entries in the map.
@@ -252,19 +165,12 @@ public class SparqlQueries {
             }
         }
         // print some information about the common subjects found....
-        System.out.println("Based on the movies: ");
-
-        for(String title : succesQueries) {
-            System.out.print(title + "  | ");
-        }
-
         return favorite_subgenres;
     }
 
-    // private method used by method above.
-    // This method takes a list of movies, and makes returns a list of titles that are suitable for when querying the DBpedia sparqø-endpoint.
+    // helper method to create a list of multiple possible URL's that could succesfully query dbpedia.
     private List<String> prepareURLs(List<Movie> movies) {
-        ArrayList<String> queryAttempts = new ArrayList<>();
+        List<String> queryAttempts = new ArrayList<>();
         for (Movie m : movies) {
             String year = m.getYear().split("\\^\\^")[0];
             //url's cant have whitespace
@@ -274,24 +180,22 @@ public class SparqlQueries {
             // title-url + _(film)
             String titlePlusFilm = originalTitle + "_(film)";
             queryAttempts.add(titlePlusFilm);
-            String titlePlusYear = originalTitle +  "_(" + year + "_film)";
+            String titlePlusYear = originalTitle +  "_("+year+"_film)";
             queryAttempts.add(titlePlusYear);
         }
         return queryAttempts;
     }
 
+
     // This method queries the dbpedia.org sparql endpoint for descriptions that we want to add to our own TDB. Essentially combining data from two datasets.
     public boolean insertDescriptionEndpoint(List<Movie> movies) {
-
         if(movies.isEmpty()) {
             return false;
         }
-
         List<String> queryAttempts = prepareURLs(movies);
         int attempt = 1;
         boolean skipNext = false;
         System.out.println("\nRetrieveing descriptions from dbpedia.org....\n");
-
         for (String title : queryAttempts) {
             if(!(skipNext)) {
                 String query = "PREFIX dc: <http://purl.org/dc/terms/> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX dbo: <http://dbpedia.org/ontology/>" +
@@ -332,11 +236,13 @@ public class SparqlQueries {
                 + " WHERE { ?movie info216:title ?title; "
                 + "  info216:extra ?extra. "
                 + " FILTER regex(?title, \"^" + title + "$\", \"i\")."
-                // + "}"
+//                + "    }"
                 + "} ";
         UpdateAction.parseExecute(query, model);
     }
 
+
+    // return the decription of the paramter title.
     public String getExtraDescription(Movie title) {
         String result = "";
         String query =
@@ -357,6 +263,7 @@ public class SparqlQueries {
         return result;
     }
 
+    // Get all subjects of a paramter movie.
     public boolean sparqlEndpointGetSubjects(String title) {
         boolean match = false;
         title = title.replace(" ", "_");
@@ -372,11 +279,12 @@ public class SparqlQueries {
         ResultSet resultSet = QueryExecutionFactory.sparqlService("http://dbpedia.org/sparql", query).execSelect();
         if(resultSet.hasNext()) {
             match = true;
-            resultSet.forEachRemaining(qsol -> System.out.println(qsol.get("?subject")));
+            resultSet.forEachRemaining(qsol -> System.out.println(qsol.get("?subject").toString()));
         }
         return match;
     }
 
+    // Print all triples of a movie title
     public Boolean searchForAMovie(String title) {
         boolean match = false;
         String query = "PREFIX m: <http://info216.no/v2019/vocabulary/> SELECT DISTINCT ?movie ?property ?value WHERE { ?movie m:title ?title .?movie ?property ?value .FILTER regex(str(?title), \""+title+"\") .}";
@@ -387,31 +295,29 @@ public class SparqlQueries {
                 .execSelect();
         if(resultSet.hasNext()) {
             match = true;
+            resultSet.forEachRemaining(qsol -> System.out.println(qsol.get("?movie").toString()+ qsol.get("?property").toString() + qsol.get("?value").toString()));
         }
-
-        resultSet.forEachRemaining(qsol -> System.out.println(qsol.get("?movie").toString()+ qsol.get("?property").toString() + qsol.get("?value").toString()));
-
         return match;
     }
 
+    // return a list of all actors of a title.
     public ArrayList<String> actorsOfTitle(String title) {
         ArrayList<String> list = new ArrayList<>();
-        boolean match = false;
-        String query = "PREFIX info216: <http://info216.no/v2019/vocabulary/> PREFIX dbp: <http://dbpedia.org/ontology/> PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#> "+
-                "SELECT DISTINCT ?name WHERE { ?movie info216:title ?value .?movie info216:actors ?actors. ?actors dbp:starring ?actor. ?actor vcard:FN ?name." +
+        String query = "PREFIX info216: <http://info216.no/v2019/vocabulary/> PREFIX dbo: <http://dbpedia.org/ontology/> PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#> "+
+                "SELECT DISTINCT ?name WHERE { ?movie info216:title ?value .?movie info216:actors ?actors. ?actors dbo:starring ?actor. ?actor vcard:FN ?name." +
                 "FILTER regex(str(?value), \"^" + title + "$\", \"i\") .}";
         ResultSet resultSet = QueryExecutionFactory
                 .create(query, model)
                 .execSelect();
-        resultSet.forEachRemaining(
-                querySolution -> {
-                    list.add(querySolution.get("?name").toString());
-                }
-        );
-
+        if(resultSet.hasNext()) {
+            resultSet.forEachRemaining(qsol ->
+                    list.add(qsol.get("?name").toString())
+            );
+        }
         return list;
     }
 
+    // return a list of all keywords of a title.
     public ArrayList<String> keywordsOfTitle(String title) {
         ArrayList<String> list = new ArrayList<>();
         String query = "PREFIX info216: <http://info216.no/v2019/vocabulary/>  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> "+
@@ -427,6 +333,7 @@ public class SparqlQueries {
         return list;
     }
 
+    // print all movies of paramter director.
     public Boolean allMoviesOfDirector(String director) {
         boolean match = false;
         String query = "PREFIX m: <http://info216.no/v2019/vocabulary/> PREFIX dbp: <http://dbpedia.org/ontology/> PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>" +
@@ -443,6 +350,7 @@ public class SparqlQueries {
         return match;
     }
 
+    // print all movies of paramter actor.
     public ResultSet allMoviesOfActor(String actor) {
         String query = "PREFIX m: <http://info216.no/v2019/vocabulary/> PREFIX dbp: <http://dbpedia.org/ontology/> PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>" +
                 "SELECT DISTINCT ?title WHERE { ?movie m:title ?title .?movie m:actors ?actors. ?actors dbp:starring ?actor. ?actor vcard:FN ?name." +
@@ -459,6 +367,7 @@ public class SparqlQueries {
         return resultSet;
     }
 
+    // Return a resultset of all titles.
     public ResultSet allTitles() {
         String query = "PREFIX info216: <http://info216.no/v2019/vocabulary/>" +
                 "SELECT DISTINCT ?title" +
@@ -472,13 +381,13 @@ public class SparqlQueries {
         return resultSet;
     }
 
+    // Return a resultset of all genres
     public ResultSet allGenres() {
         String query = "PREFIX info216: <http://info216.no/v2019/vocabulary/>" +
                 "SELECT DISTINCT ?genre" +
                 " WHERE { ?movie info216:genres ?genre " +
                 ".}" +
                 "LIMIT 4830";
-
         ResultSet resultSet = QueryExecutionFactory
                 .create(query, model)
                 .execSelect();
@@ -486,6 +395,7 @@ public class SparqlQueries {
         return resultSet;
     }
 
+    // Return a resultset of all a certain title.
     public ResultSet searchTitle(String search) {
         String query = "PREFIX info216: <http://info216.no/v2019/vocabulary/>" +
                 "SELECT DISTINCT ?title" +
@@ -513,6 +423,7 @@ public class SparqlQueries {
         return resultSet;
     }
 
+    // print people who are both Director and actors.
     public Boolean personDirectorAndActor() {
         boolean match = false;
         String query = "PREFIX m: <http://info216.no/v2019/vocabulary/> PREFIX dbp: <http://dbpedia.org/ontology/>" +
@@ -542,6 +453,8 @@ public class SparqlQueries {
         resultSet.forEachRemaining(qsol -> System.out.println(qsol.toString()));
     }
 
+
+
     // This method prints x number of randomly selected mobies from out TDB. Mostly used for testing/simulation ourposes.
     public List<String> selectRandomMovies(int queryLimit) {
         List<String> titles = new ArrayList<>();
@@ -552,6 +465,30 @@ public class SparqlQueries {
                 "}" +
                 "ORDER BY RAND()" +
                 "LIMIT " + queryLimit;
+        ResultSet resultSet = QueryExecutionFactory
+                .create(query, model)
+                .execSelect();
+        while(resultSet.hasNext()) {
+            QuerySolution qsol = resultSet.next();
+            if(qsol.get("?title") != null){
+                titles.add(qsol.get("?title").toString());
+            }
+        }
+        return titles;
+    }
+
+    // Select x amount of y genre.
+    public ArrayList<String> selectRandomMoviesOfGenre(int queryLimit, String genre) {
+        ArrayList<String> titles = new ArrayList<>();
+        String query = "PREFIX info216: <http://info216.no/v2019/vocabulary/> " +
+                "SELECT DISTINCT ?title ?genres " +
+                " WHERE { " +
+                "?movie info216:title ?title; " +
+                "       info216:genres ?genres. " +
+                "FILTER regex(str(?genres), \""+genre+"\", \"i\")." +
+                "}" +
+                "ORDER BY RAND()" +
+                "LIMIT "+ queryLimit;
         ResultSet resultSet = QueryExecutionFactory
                 .create(query, model)
                 .execSelect();

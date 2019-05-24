@@ -127,8 +127,6 @@ public class MovieController implements Initializable {
 
         MovieMap.initMovieMap(movieMap);
 
-        // This code allows you to click the movie titles in the table to select em
-        // You have to double click for this to work for some unknown reason.
         movielist.setRowFactory( tv -> {
             TableRow<MovieModel> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -164,15 +162,11 @@ public class MovieController implements Initializable {
             return row ;
         });
 
-        // See firstSetup() method above
         firstTimeSetup();
 
         SparqlQueries sparqlQueries = new SparqlQueries();
-
-        // Runs a query of all titles in the database
         ResultSet rs = sparqlQueries.allTitles();
 
-        // Iterates though all titles and adds em to the title display list
         rs.forEachRemaining (
             qsol -> {
                 if (qsol.get("?title").toString() != null) {
@@ -185,7 +179,6 @@ public class MovieController implements Initializable {
         tab_table.setCellValueFactory(new PropertyValueFactory<>("list"));
         movielist.setItems(observableList);
 
-        // Allows you to search the movie title menu by typing and pressing enter
         search_box.setOnAction(type -> {
 
             observableList.clear();
@@ -193,7 +186,6 @@ public class MovieController implements Initializable {
 
             ResultSet searchSet = sparqlQueries.searchTitle(search_box.getText());
 
-            // Special query to run searches for titles
             searchSet.forEachRemaining (
                 qsol -> {
                     if (qsol.get("?title").toString() != null) {
@@ -207,7 +199,6 @@ public class MovieController implements Initializable {
 
         });
 
-        // Reset button - Resets all selected titles
         reset.setOnMouseClicked(clicked -> {
             selectedMovies.clear();
             error.setText("");
@@ -216,7 +207,6 @@ public class MovieController implements Initializable {
             movieLister.setItems(observableMovieList);
         });
 
-        // Add title to list - Checks for errors and duplicates
         add_movie.setOnMouseClicked(clicked -> {
             if (selectedMovies.size() < 5) {
                 if (title.getText() != null && !title.getText().equals("")) {
@@ -249,11 +239,6 @@ public class MovieController implements Initializable {
 
     }
 
-    /**
-     * Go back to previous window
-     * @param event
-     * @throws IOException
-     */
     public void backButtonPushed(ActionEvent event) throws IOException {
         selectedMovies.clear();
         Parent welcomeScreenParent = FXMLLoader.load(getClass().getResource("WelcomeScreen.fxml"));
@@ -263,11 +248,6 @@ public class MovieController implements Initializable {
         window.show();
     }
 
-    /**
-     * Go to next window
-     * @param event
-     * @throws IOException
-     */
     public void nextButtonPushed(ActionEvent event) throws IOException {
 
         if (selectedMovies.size() == 5) {

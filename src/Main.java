@@ -19,36 +19,28 @@ public class Main extends Application {
 
     private void testQueries(SparqlQueries queries) {
 
-        List<String> list = queries.selectRandomMovies(10);
+        //  YOU CAN USE THIS METHOD TO UNCOMMENT LINES AND TEST QUERIES.
+        //  Run this top find the most common subjects of x amount of movies by y genre.
 
-        //.printAllTriples();
-
+        List<String> list = queries.selectRandomMoviesOfGenre(10, "Animation");
         List<Movie> movies = queries.createMovieObjects(list);
-        List<String> topSubgernes = queries.predictSubgenres(movies);
-
-        for (String s : topSubgernes) {
-            System.out.print("\nyou seem to like " + s.toLowerCase() + " & ");
+        List<String> topSubgenres = queries.predictSubgenres(movies);
+        System.out.println("\nBased on the movies...");
+        System.out.print("   ");
+        for(Movie m: movies) {
+            System.out.print(m.getTitle() + "  | ");
         }
-
-        //queries.sparqlEndpoint("Interstellar");
-        //queries.sparqlEndpointGetComment("Interstellar");
-        //queries.sparqlEndpointGetSubjects("Interstellar");
-        //queries.AllMoviesOfDirector("quentin");
-        //queries.AllMoviesOfActor("Leonardo DiCaprio");
-        //queries.AllMoviesOfActor("Tom Hanks");
-        //queries.close();
+        System.out.println("\nYou really seem to love " + topSubgenres.get(0) + "!");
+        System.out.println("You also really like " + topSubgenres.get(1) + "!");
+        System.out.println("As well as " + topSubgenres.get(2) + "!\n");
+        queries.close();
     }
 
-    /**
-     * Main method <---- Start Here ----->
-     * @param stage Java FX
-     * @throws Exception if error in start
-     */
+
     @Override
     public void start(Stage stage) throws Exception {
-
         SparqlQueries sparqlQueries = new SparqlQueries();
-        //testQueries(sparqlQueries);
+        testQueries(sparqlQueries);
 
         stage.setResizable(true);
 

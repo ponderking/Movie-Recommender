@@ -185,17 +185,14 @@ public class MovieRecommender {
         }
 
     }
-
     /**
      *
-     * This method checks if selected titles year is +/- x-amount of years from targets
-     *
-     * @param year +/- this amount of years
-     * @param selected movie
-     * @param target movie
-     *
-     * @return Boolean true of match
+     * @param year
+     * @param selected
+     * @param target
+     * @return
      */
+
     private static Boolean withinYear(int year, Movie selected, Movie target) {
         if (NumberUtils.isNumber(target.getYear())) {
 
@@ -215,11 +212,8 @@ public class MovieRecommender {
 
     /**
      *
-     * Selects a random movies from the list of 5 movies the user chose in UI
-     * When the movie is chosen it gets blacklisted from being chosen agian
-     *
-     * @param user profile
-     * @param usedMovies blacklist of movies already used
+     * @param user
+     * @param usedMovies
      * @return
      */
     private static Movie selectMovie(User user, List<Movie> usedMovies) {
@@ -236,10 +230,8 @@ public class MovieRecommender {
 
     /**
      *
-     * Generates a random number in rage between and and inclusive min and max integer
-     *
-     * @param min number to be generated at random
-     * @param max number to be generated at random
+     * @param min
+     * @param max
      * @return
      */
     public static int getRandomIntegerInRange(int min, int max) {

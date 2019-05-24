@@ -23,7 +23,8 @@ git clone https://github.com/ponderking/Movie-Recommender
 11. This is the genre selection menu. Same rules apply here.
 12. Once you have selected 3 genres press `next` to get your movie recommendations.
 13. Here you can read about your recommendations.
-14. You can uncomment the code in testQueries in main to try some simulation of queries. 
+14. You can try to delete the movie_tdb folder, in order to make the program setup the TDB and run JSONtoTDB again. This triggers when you press the Start button on the interface.
+15. You can uncomment the code in testQueries in main to try some simulation of queries. 
 15. **Enjoy!**
 
 

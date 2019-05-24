@@ -187,10 +187,13 @@ public class MovieRecommender {
     }
     /**
      *
-     * @param year
-     * @param selected
-     * @param target
-     * @return
+     * * This method checks if selected titles year is +/- x-amount of years from targets
+     *
+     * @param year +/- this amount of years
+     * @param selected movie
+     * @param target movie
+     *
+     * @return Boolean true of match
      */
 
     private static Boolean withinYear(int year, Movie selected, Movie target) {
@@ -212,8 +215,8 @@ public class MovieRecommender {
 
     /**
      *
-     * @param user
-     * @param usedMovies
+     * @param user profile
+     * @param usedMovies blacklist of movies already used
      * @return
      */
     private static Movie selectMovie(User user, List<Movie> usedMovies) {
@@ -230,8 +233,8 @@ public class MovieRecommender {
 
     /**
      *
-     * @param min
-     * @param max
+     * @param min number to be generated at random
+     * @param max number to be generated at random
      * @return
      */
     public static int getRandomIntegerInRange(int min, int max) {

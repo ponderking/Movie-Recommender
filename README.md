@@ -7,7 +7,7 @@
 ## How to use:
 * Clone or download this repository by running command below or [click here](https://github.com/EwyBoy/Movie-Recommender/archive/master.zip)
 ```
-git clone https://github.com/EwyBoy/Movie-Recommender
+git clone https://github.com/ponderking/Movie-Recommender
 ```
 
 1. Open the project folder `Movie Recommender` as a project in IntelliJ (Have not tested Eclipse)
@@ -22,8 +22,17 @@ git clone https://github.com/EwyBoy/Movie-Recommender
 10. Press `next` to continue after selecting 5 movies you enjoy.
 11. This is the genre selection menu. Same rules apply here.
 12. Once you have selected 3 genres press `next` to get your movie recommendations.
-13. Her you can read about your recommendations.
-14. **Enjoy!**
+13. Here you can read about your recommendations.
+14. You can uncomment the code in testQueries in main to try some simulation of queries. 
+15. **Enjoy!**
+
+
+Some Important Classes:
+database/JSOntoTDB.java is responsible for converting JSON to TDB, including tagging our data with a semantic vocabulary.
+database/SPARQLQueries.java contains all sparql-queries being used.
+movie/MovieRecommender.java contains recommendation algorithm
+fx/RecommendationController.java contains presentation of recommendation, including calling queries to retrieve open-link semantic data.
+
 
 ![](https://i.imgur.com/52F3yNX.png)
 ![](https://i.imgur.com/CAQ9VKy.png)
